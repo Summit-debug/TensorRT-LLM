@@ -1,0 +1,365 @@
+import java.util.*;
+
+enum CarCategory {
+    SEDAN, SUV, SPORTS, LUXURY
+}
+
+class ExtraFeature {
+    private String name;
+    private double price;
+
+    public ExtraFeature(String name, double price) {
+        this.name = name;
+        this.price = price;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+}
+
+class Customer {
+    private String name;
+    private String accountNumber;
+
+    public Customer(String name, String accountNumber) {
+        this.name = name;
+        this.accountNumber = accountNumber;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getAccountNumber() {
+        return accountNumber;
+    }
+}
+
+class Car {
+    private String make;
+    private String model;
+    private int year;
+    private double basePrice;
+    private CarCategory category;
+    private boolean available;
+    private List<ExtraFeature> extraFeatures;
+
+    public Car(String make, String model, int year, double basePrice, CarCategory category) {
+        this.make = make;
+        this.model = model;
+        this.year = year;
+        this.basePrice = basePrice;
+        this.category = category;
+        this.available = true;
+        this.extraFeatures = new ArrayList<>();
+    }
+
+    public String getMake() {
+        return make;
+    }
+
+    public String getModel() {
+        return model;
+    }
+
+    public int getYear() {
+        return year;
+    }
+
+    public double getBasePrice() {
+        return basePrice;
+    }
+
+    public CarCategory getCategory() {
+        return category;
+    }
+
+    public boolean isAvailable() {
+        return available;
+    }
+
+    public void setAvailable(boolean available) {
+        this.available = available;
+    }
+
+    public List<ExtraFeature> getExtraFeatures() {
+        return extraFeatures;
+    }
+
+    public void addExtraFeature(ExtraFeature feature) {
+        extraFeatures.add(feature);
+    }
+
+    public String getCarInfo() {
+        return  make + " " + model + " " + year + " - RS:" + basePrice + " (" + category + ")";
+    }
+}
+
+class Showroom {
+    private String showroomName;
+    private List<Car> cars;
+    private List<Customer> customers;
+    public Map<CarCategory, List<ExtraFeature>> availableExtraFeatures;
+
+    public Showroom(String showroomName) {
+        this.showroomName = showroomName;
+        this.cars = new ArrayList<>();
+        this.customers = new ArrayList<>();
+        this.availableExtraFeatures = new HashMap<>();
+        initializeExtraFeatures();
+    }
+
+    private void initializeExtraFeatures() {
+        // Define extra features for each category
+        availableExtraFeatures.put(CarCategory.SEDAN, Arrays.asList(
+                new ExtraFeature("Leather Seats", 1500),
+                new ExtraFeature("Sunroof", 1200),
+                new ExtraFeature("Navigation System", 1000)
+        ));
+
+        availableExtraFeatures.put(CarCategory.SUV, Arrays.asList(
+                new ExtraFeature("Third Row Seating", 2000),
+                new ExtraFeature("Rear Entertainment System", 1800),
+                new ExtraFeature("Off-Road Package", 1500)
+        ));
+
+        availableExtraFeatures.put(CarCategory.SPORTS, Arrays.asList(
+                new ExtraFeature("Performance Package", 2500),
+                new ExtraFeature("Carbon Fiber Trim", 1800),
+                new ExtraFeature("Sport Exhaust", 2000)
+        ));
+
+        availableExtraFeatures.put(CarCategory.LUXURY, Arrays.asList(
+                new ExtraFeature("Premium Sound System", 2000),
+                new ExtraFeature("Advanced Driver Assistance", 2200),
+                new ExtraFeature("Heated and Ventilated Seats", 1800)
+        ));
+    }
+
+    public void addCar(Car car) {
+        cars.add(car);
+    }
+
+    public List<Car> listAvailableCars() {
+        List<Car> availableCars = new ArrayList<>();
+        for (Car car : cars) {
+            if (car.isAvailable()) {
+                availableCars.add(car);
+            }
+        }
+        return availableCars;
+    }
+
+    public void listCarSpecs(Car car) {
+        System.out.println("Car Specs for: " + car.getCarInfo());
+        System.out.println("Base Price: RS" + car.getBasePrice());
+        System.out.println("Category: " + car.getCategory());
+        System.out.println("Available Extra Features:");
+        List<ExtraFeature> categoryExtraFeatures = availableExtraFeatures.get(car.getCategory());
+        for (int i = 0; i < categoryExtraFeatures.size(); i++) {
+            ExtraFeature feature = categoryExtraFeatures.get(i);
+            System.out.println((i + 1) + ": " + feature.getName() + " - RS" + feature.getPrice());
+        }
+    }
+
+    public void compareCars(Car car1, Car car2) {
+        System.out.println("Comparing Cars:");
+        System.out.println("Car 1: " + car1.getCarInfo());
+        listCarSpecs(car1);
+        System.out.println("\nVS\n");
+        System.out.println("Car 2: " + car2.getCarInfo());
+        listCarSpecs(car2);
+    }
+
+    public boolean buyCar(Customer customer, Car car, List<ExtraFeature> selectedFeatures) {
+        // Check if the car is available
+        if (!car.isAvailable()) {
+            System.out.println("This car is not available for purchase.");
+            return false;
+        }
+
+        // Display car details
+        System.out.println("Car Details:");
+        listCarSpecs(car);
+
+        double totalAmount = car.getBasePrice();
+        for (ExtraFeature feature : selectedFeatures) {
+            totalAmount += feature.getPrice();
+        }
+
+        // Ask for user details
+        System.out.println("Enter your name:");
+        Scanner scanner = new Scanner(System.in);
+        String name = scanner.nextLine();
+        System.out.println("Enter your account number:");
+        String accountNumber = scanner.nextLine();
+
+        // Process payment
+        System.out.println("Enter the payment amount:");
+        double paymentAmount = scanner.nextDouble();
+        if (paymentAmount < totalAmount) {
+            System.out.println("Insufficient payment. Transaction canceled.");
+            return false;
+        }
+
+        // Calculate change
+        double change = paymentAmount - totalAmount;
+
+        // Mark the car as sold
+        car.setAvailable(false);
+
+        // Print receipt
+        System.out.println("\nReceipt:");
+        System.out.println("Car: " + car.getCarInfo());
+        System.out.println("Base Price: rs" + car.getBasePrice());
+        if (!selectedFeatures.isEmpty()) {
+            System.out.println("Selected Extra Features:");
+            for (ExtraFeature feature : selectedFeatures) {
+                System.out.println(feature.getName() + ": RS" + feature.getPrice());
+            }
+        }
+        System.out.println("Total Amount: RS" + totalAmount);
+        System.out.println("Payment Amount: RS" + paymentAmount);
+        System.out.println("Change: RS" + change);
+        System.out.println("Thank you, " + name + "!");
+        scanner.close();
+
+        // Add customer to the list
+        customers.add(customer);
+
+        return true;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Showroom showroom = new Showroom("BestCars Showroom");
+
+        // Add some cars
+        showroom.addCar(new Car("Suzuki", "Swift", 2023, 1190000, CarCategory.SEDAN));
+        showroom.addCar(new Car("Toyota", "Corolla", 2022, 250000, CarCategory.SEDAN));
+        showroom.addCar(new Car("Honda", "Civic", 2021, 330000, CarCategory.SEDAN));
+        showroom.addCar(new Car("BMW", "X5", 2019, 500000, CarCategory.SUV));
+        showroom.addCar(new Car("Audi", "A4", 2020, 4500000, CarCategory.SEDAN));
+
+        // Create a customer
+        Customer customer = new Customer("Umar khan", "987654321");
+
+        Scanner scanner = new Scanner(System.in);
+
+        // Display all available cars
+        List<Car> availableCars = showroom.listAvailableCars();
+        System.out.println("Available Cars:");
+        for (int i = 0; i < availableCars.size(); i++) {
+            System.out.println((i + 1) + ": " + availableCars.get(i).getCarInfo());
+        }
+
+        // User selects a car
+        System.out.println("Select a car by entering its number:");
+        int carChoice = scanner.nextInt();
+
+        if (carChoice >= 1 && carChoice <= availableCars.size()) {
+            Car selectedCar = availableCars.get(carChoice - 1);
+
+            // User views car specs in detail
+            showroom.listCarSpecs(selectedCar);
+
+            // User decides if they want to compare
+            System.out.println("Do you want to compare this car with another car? (yes/no)");
+            String compareInput = scanner.next();
+            boolean compare = compareInput.equalsIgnoreCase("yes");
+
+            if (compare) {
+                // User selects another car for comparison
+                System.out.println("Select another car for comparison by entering its number:");
+                int compareCarChoice = scanner.nextInt();
+
+                if (compareCarChoice >= 1 && compareCarChoice <= availableCars.size()) {
+                    Car carToCompare = availableCars.get(compareCarChoice - 1);
+
+                    // User compares the cars
+                    showroom.compareCars(selectedCar, carToCompare);
+
+                    // User decides if they want to buy
+                    System.out.println("Do you want to buy this car? (yes/no)");
+                    String buyInput = scanner.next();
+                    boolean buy = compareInput.equalsIgnoreCase("yes");
+
+                    if (buy) {
+                        // User selects extra features
+                        System.out.println("Select extra features by entering their numbers (comma-separated):");
+                        List<ExtraFeature> selectedFeatures = new ArrayList<>();
+                        List<ExtraFeature> availableFeatures = showroom.availableExtraFeatures.get(selectedCar.getCategory());
+                        for (int i = 0; i < availableFeatures.size(); i++) {
+                            System.out.println((i + 1) + ": " + availableFeatures.get(i).getName() + " - RS" + availableFeatures.get(i).getPrice());
+                        }
+                        String featureChoices = scanner.next();
+                        String[] featureIndices = featureChoices.split(",");
+                        for (String index : featureIndices) {
+                            int featureIndex = Integer.parseInt(index.trim()) - 1;
+                            if (featureIndex >= 0 && featureIndex < availableFeatures.size()) {
+                                selectedFeatures.add(availableFeatures.get(featureIndex));
+                            }
+                        }
+
+                        // User buys the car and adds extra features
+                        boolean bought = showroom.buyCar(customer, selectedCar, selectedFeatures);
+
+                        if (bought) {
+                            System.out.println("Car purchased successfully!");
+                        } else {
+                            System.out.println("Car purchase failed.");
+                        }
+                    } else {
+                        System.out.println("Car not bought.");
+                    }
+                } else {
+                    System.out.println("Invalid selection for comparison.");
+                }
+            } else {
+                // User decides if they want to buy without comparison
+                System.out.println("Do you want to buy this car? (yes/no)");
+                String buyInput = scanner.next();
+                boolean buy = compareInput.equalsIgnoreCase("yes");
+
+                if (buy) {
+                    // User selects extra features
+                    System.out.println("Select extra features by entering their numbers (comma-separated):");
+                    List<ExtraFeature> selectedFeatures = new ArrayList<>();
+                    List<ExtraFeature> availableFeatures = showroom.availableExtraFeatures.get(selectedCar.getCategory());
+                    for (int i = 0; i < availableFeatures.size(); i++) {
+                        System.out.println((i + 1) + ": " + availableFeatures.get(i).getName() + " -RS" + availableFeatures.get(i).getPrice());
+                    }
+                    String featureChoices = scanner.next();
+                    String[] featureIndices = featureChoices.split(",");
+                    for (String index : featureIndices) {
+                        int featureIndex = Integer.parseInt(index.trim()) - 1;
+                        if (featureIndex >= 0 && featureIndex < availableFeatures.size()) {
+                            selectedFeatures.add(availableFeatures.get(featureIndex));
+                        }
+                    }
+
+                    // User buys the car and adds extra features
+                    boolean bought = showroom.buyCar(customer, selectedCar, selectedFeatures);
+
+                    if (bought) {
+                        System.out.println("Car purchased successfully!");
+                    } else {
+                        System.out.println("Car purchase failed.");
+                    }
+                } else {
+                    System.out.println("Car not bought.");
+                }
+            }
+        } else {
+            System.out.println("Invalid selection for car.");
+        }
+
+        scanner.close();
+    }
+}
